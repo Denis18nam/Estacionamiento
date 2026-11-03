@@ -315,6 +315,52 @@ export default function Administrador() {
 
   const nombre = ses?.nombre || 'Administrador'
 
+  // Diapositivas del carrusel principal
+  const slides = [
+    {
+      etiqueta: 'UBIPARK · ESTACIONAMIENTOS',
+      titulo: 'Encuentra tu lugar ideal para estacionarte',
+      descripcion: 'Consulta espacios disponibles, conoce sus características y administra tus reservaciones desde una sola plataforma.',
+      imagen: 'https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=1600&q=85',
+      boton: 'Ver estacionamientos',
+      seccion: 'estacionamientos'
+    },
+    {
+      etiqueta: 'GESTIÓN INTELIGENTE',
+      titulo: 'Todo el control de UbiPark en un solo lugar',
+      descripcion: 'Supervisa usuarios, propietarios, vehículos y reservaciones de manera sencilla y organizada.',
+      imagen: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=1600&q=85',
+      boton: 'Administrar usuarios',
+      seccion: 'usuarios'
+    },
+    {
+      etiqueta: 'RESERVA · ORGANIZA · AVANZA',
+      titulo: 'Una mejor experiencia de estacionamiento',
+      descripcion: 'Mantén la información de la plataforma actualizada y consulta los datos registrados en tiempo real.',
+      imagen: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1600&q=85',
+      boton: 'Ver reservaciones',
+      seccion: 'reservas'
+    }
+  ]
+
+  const [slideActivo, setSlideActivo] = useState(0)
+
+  const siguienteSlide = () => {
+    setSlideActivo((actual) => (actual + 1) % slides.length)
+  }
+
+  const anteriorSlide = () => {
+    setSlideActivo((actual) => (actual - 1 + slides.length) % slides.length)
+  }
+
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      setSlideActivo((actual) => (actual + 1) % 3)
+    }, 5000)
+
+    return () => clearInterval(intervalo)
+  }, [])
+
   useEffect(() => {
     document.title = 'UbiPark | Administrador'
 
@@ -574,6 +620,63 @@ export default function Administrador() {
         <div className="admin-content">
           {seccionActiva === 'dashboard' ? (
             <>
+              <section className="admin-carousel" aria-label="Carrusel informativo de UbiPark">
+                {slides.map((slide, indice) => (
+                  <div
+                    key={indice}
+                    className={`admin-slide ${slideActivo === indice ? 'admin-slide-active' : ''}`}
+                    aria-hidden={slideActivo !== indice}
+                  >
+                    <img
+                      className="admin-slide-image"
+                      src={slide.imagen}
+                      alt={slide.titulo}
+                    />
+                    <div className="admin-slide-overlay" />
+                    <div className="admin-slide-content">
+                      <span className="admin-slide-tag">{slide.etiqueta}</span>
+                      <h1>{slide.titulo}</h1>
+                      <p>{slide.descripcion}</p>
+                      <button
+                        className="admin-slide-button"
+                        onClick={() => abrirSeccion(slide.seccion)}
+                      >
+                        {slide.boton} <span>→</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  className="admin-carousel-arrow admin-carousel-prev"
+                  onClick={anteriorSlide}
+                  aria-label="Diapositiva anterior"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  className="admin-carousel-arrow admin-carousel-next"
+                  onClick={siguienteSlide}
+                  aria-label="Diapositiva siguiente"
+                >
+                  ›
+                </button>
+                <div className="admin-carousel-dots">
+                  {slides.map((slide, indice) => (
+                    <button
+                      key={indice}
+                      type="button"
+                      className={`admin-carousel-dot ${slideActivo === indice ? 'active' : ''}`}
+                      onClick={() => setSlideActivo(indice)}
+                      aria-label={`Ir a la diapositiva ${indice + 1}`}
+                      aria-current={slideActivo === indice ? 'true' : undefined}
+                    />
+                  ))}
+                </div>
+              </section>
+
               <section className="admin-welcome">
                 <div>
                   <span className="admin-welcome-tag">CENTRO DE CONTROL</span>
