@@ -1421,11 +1421,8 @@
 
 
 .admin-content table tbody tr {
-
-  transition: *background* .2s ease;
-
+  transition: background .2s ease;
 }
-
 
 
 .admin-content table tbody tr:hover {
