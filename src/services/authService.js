@@ -1,6 +1,15 @@
+
 import { supabase } from '../lib/supabase.js'
 
-export async function registrarUsuario({ mail, pass, nombre, apellidos, tel, idRol }) {
+// Registrar clientes y propietarios
+export async function registrarUsuario({
+  mail,
+  pass,
+  nombre,
+  apellidos,
+  tel,
+  idRol
+}) {
   const { data: cred, error: errCred } = await supabase
     .from('credenciales')
     .insert([
@@ -23,8 +32,8 @@ export async function registrarUsuario({ mail, pass, nombre, apellidos, tel, idR
     .from('usuarios')
     .insert([
       {
-        nombre: nombre,
-        apellidos: apellidos,
+        nombre,
+        apellidos,
         idcredencial: cred.idcredencial,
         idrol: idRol,
       },
@@ -40,6 +49,7 @@ export async function registrarUsuario({ mail, pass, nombre, apellidos, tel, idR
   return usuario
 }
 
+// Iniciar sesión
 export async function iniciarSesion({ mail, pass }) {
   const { data, error } = await supabase
     .from('credenciales')
@@ -54,12 +64,12 @@ export async function iniciarSesion({ mail, pass }) {
         roles ( nombrerol )
       )
     `)
-    .eq('correo', mail)
+    .eq('correo', mail.trim().toLowerCase())
     .eq('Contraseña', pass)
     .maybeSingle()
 
   if (error) {
-    console.error('Error al iniciar sesión:', error.message)
+    console.error('Error al iniciar sesión:', error)
     throw new Error('Error al conectar con la base de datos.')
   }
 
@@ -67,18 +77,37 @@ export async function iniciarSesion({ mail, pass }) {
     throw new Error('Correo o contraseña incorrectos.')
   }
 
-  // Extraer el usuario relacionado (Supabase puede devolverlo como objeto o como arreglo)
-  const u = Array.isArray(data.usuarios) ? data.usuarios[0] : data.usuarios
-  const rolNombre = u?.roles?.nombrerol || u?.roles?.[0]?.nombrerol || 'cliente'
+  // Obtener información del usuario
+  const u = Array.isArray(data.usuarios)
+    ? data.usuarios[0]
+    : data.usuarios
 
-  // Retornamos un objeto aplanado con todos los datos clave en la raíz
+  if (!u) {
+    throw new Error('No se encontró el perfil del usuario.')
+  }
+
+  // Obtener nombre del rol
+  const rolNombre = Array.isArray(u.roles)
+    ? u.roles[0]?.nombrerol
+    : u.roles?.nombrerol
+
+  const rolOriginal = (rolNombre || 'cliente').toLowerCase()
+
+  // Convertir admin al nombre utilizado en React
+  const rolFinal = rolOriginal === 'admin'
+    ? 'administrador'
+    : rolOriginal
+
+  // Devolver información completa
   return {
-    id: u?.idusuario,
-    idusuario: u?.idusuario,
+    id: u.idusuario,
+    idusuario: u.idusuario,
     idcredencial: data.idcredencial,
     correo: data.correo,
-    nombre: u?.nombre,
-    apellidos: u?.apellidos,
-    role: rolNombre.toLowerCase(),
+    nombre: u.nombre,
+    apellidos: u.apellidos,
+    idrol: u.idrol,
+    role: rolFinal,
+    tel: ''
   }
 }
